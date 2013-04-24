@@ -1,33 +1,4 @@
-This script is used at the OCF to allow users to change their own ldap loginShell attribute.
-For example:
-sanjayk$ldapsearch -x -LLL uid=sanjayk
-dn: uid=sanjayk,ou=People,dc=OCF,dc=Berkeley,dc=EDU
-objectClass: top
-objectClass: account
-objectClass: posixAccount
-objectClass: sambaSamAccount
-cn: Sanjay Krishnan
-uid: sanjayk
-uidNumber: 18298
-gidNumber: 20
-homeDirectory: /home/s/sa/sanjayk
-gecos: Sanjay Krishnan,The OCF,,
-sambaSID: S-1-5-21-895014779-1868075160-1975190870-37596
-sambaPrimaryGroupSID: S-1-5-21-895014779-1868075160-1975190870-513
-sambaAcctFlags: [U          ]
-sambaPwdLastSet: 1
-sambaProfilePath: \\winprofiles\profiles\s\sa\%USERNAME%
-loginShell: /usr/bin/tcsh
-berkeleyEduCalNetUID: 646431
-
-This database is publicly accessible, but can only be written to with an appropriate GSSAPI bind. We require that a kerberos ticket:
-sanjayk$klist
-Credentials cache: FILE:/tmp/krb5cc_18298
-        Principal: sanjayk@OCF.BERKELEY.EDU
-
-  Issued           Expires          Principal
-Mar  9 23:34:30  Mar 10 09:34:30  krbtgt/OCF.BERKELEY.EDU@OCF.BERKELEY.EDU
-
+This script is used at the CSH to allow users to change their own ldap loginShell attribute.
 
 Packages required:
 python
