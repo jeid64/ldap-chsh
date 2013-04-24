@@ -1,37 +1,41 @@
 #!/usr/bin/env python
 import ldap
 import ldap.modlist as modlist
-import ldap.sasl as sasl
-import sys
-import getpass
-import os
 
+import sys
+
+import cshldap
 #Print Usage if no arguments provided
+shell = ''
+
+def changeShell(shell):
+    etcshells = open('/etc/shells', 'r')
+    line = etcshells.readline()
+    while line != '':
+        validshell = line.strip()
+        if shell == validshell:
+            print "Changing shell to %s" % (validshell)
+            ldap = cshldap.CSHLDAP('ldap://ldap.csh.rit.edu')
+            usernameldap = ldap.conn.whoami_s()
+            index = usernameldap.find(',')
+            username = usernameldap[len('dn:uid='): index]
+            dn="uid=%s,ou=Users,dc=csh,dc=rit,dc=edu" % (username)
+            old = {'loginShell': '*'}
+            new = {'loginShell': '%s' % (validshell)}
+            ldif = modlist.modifyModlist(old,new)
+            ldap.conn.modify_s(dn,ldif)
+            ldap.conn.unbind_s()
+            print "Shell successfully changed, typically it takes a while for the changes to propagate to all our machines"
+            exit()
+        else:
+            line = etcshells.readline()
+    print("You didn't put in a valid shell. Try again by reruning chsh.")
 if len(sys.argv) < 2:
   print("Usage: chsh shell")
-  exit()
+  print("You appear to be changing your shell.")
+  shell = raw_input("Type in the shell you want. Make sure you use /bin/ prefixed before it.\n")
+  changeShell(shell)
+else:
+    shell = sys.argv[1]
+    changeShell(shell)
 
-shell = sys.argv[1]
-
-#Sanitize by checking in /etc/shells (or any other list of shells)
-etcshells = open('/etc/shells', 'r')
-line = etcshells.readline()
-while line != '':
-  validshell = line.strip()
-  if shell == validshell:
-    print "Changing shell to %s" % (validshell)
-    kinit = '/usr/bin/klist -t || /usr/bin/kinit'
-    os.system(kinit)
-    l = ldap.initialize("ldaps://ldap-master.ocf.berkeley.edu:636/")
-    auth = sasl.gssapi("")
-    l.sasl_interactive_bind_s("",auth)
-    dn="uid=%s,ou=people,dc=ocf,dc=berkeley,dc=edu" % (getpass.getuser())
-    old = {'loginShell': '*'}
-    new = {'loginShell': '%s' % (validshell)}
-    ldif = modlist.modifyModlist(old,new)
-    l.modify_s(dn,ldif)
-    l.unbind_s()
-    print "Shell successfully changed, typically it takes a while for the changes to propagate to all our machines"
-    exit()
-  line = etcshells.readline()
-print "The shell you chose is not valid, please chose another shell"
